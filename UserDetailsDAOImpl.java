@@ -3,8 +3,10 @@ package com.niit.ShoppingCart.dao;
 import java.util.List;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -13,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.niit.ShoppingCart.model.UserDetails;
 @EnableTransactionManagement
 
-@Repository("UserDetailsDAO")
+@Repository("userdetailsDAO")
 
 public class UserDetailsDAOImpl implements UserDetailsDAO{
 	
@@ -26,9 +28,13 @@ public class UserDetailsDAOImpl implements UserDetailsDAO{
 	 @Transactional
 		public boolean save(UserDetails userdetails) {
 			try {
-				sessionfactory.getCurrentSession().save(userdetails);
+				Session s=sessionfactory.getCurrentSession();
+				Transaction tx=s.beginTransaction();
+				//sessionFactory.getCurrentSession().save(category);
+				s.save(userdetails);
+				tx.commit();
 				return true;
-			} catch (HibernateException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
@@ -38,9 +44,12 @@ public class UserDetailsDAOImpl implements UserDetailsDAO{
 	   @Transactional
 		public boolean update(UserDetails userdetails) {
 			try {
-				sessionfactory.getCurrentSession().update(userdetails);
+				Session s=sessionfactory.getCurrentSession();
+				Transaction tx=s.beginTransaction();
+				s.update(userdetails);
+				tx.commit();
 				return true;
-			} catch (HibernateException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
@@ -50,9 +59,12 @@ public class UserDetailsDAOImpl implements UserDetailsDAO{
 	@Transactional
 		public boolean delete(UserDetails userdetails) {
 			try {
-				sessionfactory.getCurrentSession().delete(userdetails);
+				Session s=sessionfactory.getCurrentSession();
+				Transaction tx=s.beginTransaction();
+				s.delete(userdetails);
+				tx.commit();
 				return true;
-			} catch (HibernateException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
@@ -60,7 +72,7 @@ public class UserDetailsDAOImpl implements UserDetailsDAO{
 
 		}
 	@Transactional
-		public UserDetails get(String id) {
+		public UserDetails get(int id) {
 
 			String hql = "from UserDetails where id=" + " ' " + id + "'";
 			Query query = sessionfactory.getCurrentSession().createQuery(hql);
@@ -72,6 +84,27 @@ public class UserDetailsDAOImpl implements UserDetailsDAO{
 				return list.get(0);
 			}
 		}
+	
+	@Transactional
+	public UserDetails isValidUser(String name,String password)
+	{
+		Session s=sessionfactory.getCurrentSession();
+		Transaction tx=s.beginTransaction();
+		
+		//select * from UserDetails where id='101' and password='niit'
+		String hql="from UserDetails where name = '" +name+"' and password='"+password+"'";
+		org.hibernate.Query query=s.createQuery(hql);
+		
+		List<UserDetails> list=query.list();
+		tx.commit();
+		if (list == null)
+
+			return null;
+		else {
+			return list.get(0);
+		}
+		
+	}
 	@Transactional
 		public List<UserDetails> list() {
 			String hql = "from UserDetails";
